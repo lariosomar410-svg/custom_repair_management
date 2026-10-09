@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista Tree -->
+    <record id="view_repair_order_tree" model="ir.ui.view">
+        <field name="name">repair.order.tree</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <tree string="Órdenes de Reparación">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="equipment_name"/>
+                <field name="serial_number"/>
+                <field name="total_amount" sum="Total General"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'draft'" 
+                       decoration-warning="state == 'in_progress'" 
+                       decoration-success="state == 'done'" 
+                       decoration-danger="state == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form -->
+    <record id="view_repair_order_form" model="ir.ui.view">
+        <field name="name">repair.order.form</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <form string="Orden de Reparación">
+                <header>
+                    <button name="action_start_repair" string="Iniciar Reparación" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_set_to_done" string="Marcar como Reparado" type="object" class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <!-- Botón para Generar Factura -->
+                    <button name="action_create_invoice" string="Crear Factura" type="object" class="btn-primary" invisible="state in ('draft', 'cancel') or invoice_id != False"/>
+                    <button name="action_cancel" string="Cancelar" type="object" invisible="state in ('done', 'cancel')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="equipment_name"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group>
+                            <field name="guarantee"/>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Repuestos y Piezas">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_amount" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Diagnóstico y Fallos">
+                            <field name="description" placeholder="Escribe aquí los detalles del fallo reportado..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_repair_order" model="ir.actions.act_window">
+        <field name="name">Órdenes de Reparación</field>
+        <field name="res_model">repair.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menús -->
+    <menuitem id="menu_repair_root" name="Reparaciones" sequence="10"/>
+    <menuitem id="menu_repair_order" name="Órdenes" parent="menu_repair_root" action="action_repair_order" sequence="10"/>
+
+</odoo>
